@@ -17,8 +17,10 @@ class DoubleCheckItemGetListProcessor extends modProcessor
     public function initialize()
     {
         $this->pdoFetch = $this->modx->getService('pdoFetch');
-        $this->parents = 2; /** TODO: Сделать из опций */
-        $this->depth = 50; /** TODO: Сделать из опций */
+        $this->parents = 2;
+        /** TODO: Сделать из опций */
+        $this->depth = 50;
+        /** TODO: Сделать из опций */
 
         $this->start = (int)$this->getProperty('start');
         $this->limit = (int)$this->getProperty('limit');
@@ -109,7 +111,7 @@ class DoubleCheckItemGetListProcessor extends modProcessor
             'return' => 'data',
             'where' => [
                 'pagetitle' => $name,
-                'id:!=' => $id, /** TODO: Сделать по опции */
+                'id:!=' => $id,/** TODO: Сделать по опции */
             ]
         ];
         $this->pdoFetch->setConfig($config);
@@ -119,11 +121,35 @@ class DoubleCheckItemGetListProcessor extends modProcessor
         return $doubles;
     }
 
+    /**
+     * Получение всех продуктов
+     * @return int
+     */
+    public function getTotal()
+    {
+        return $this->modx->getCount('msProduct', [
+            'class_key' => 'msProduct'
+        ]);
+    }
+
     public function process()
     {
         $items = $this->getData();
+        $total = $this->getTotal();
+
         $this->modx->log(1, print_r($items, true));
         $this->modx->log(1, print_r($this->getProperties(), true));
+        return $this->success($items, $total);
+    }
+
+    public function success($results, $total)
+    {
+        $outArr = [
+            'results' => $results,
+            'success' => true,
+            'total' => $total,
+        ];
+        return json_encode($outArr);
     }
 
     /**
