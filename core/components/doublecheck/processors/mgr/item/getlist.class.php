@@ -1,13 +1,48 @@
 <?php
 
-class DoubleCheckItemGetListProcessor extends modObjectGetListProcessor
+class DoubleCheckItemGetListProcessor extends modProcessor
 {
-    public $objectType = 'DoubleCheckItem';
-    public $classKey = 'DoubleCheckItem';
-    public $defaultSortField = 'id';
-    public $defaultSortDirection = 'DESC';
-    //public $permission = 'list';
+    /** @var pdoFetch $pdoFetch */
+    public $pdoFetch;
 
+    /**
+     * Инициализация
+     * @return bool
+     */
+    public function initialize()
+    {
+        $this->pdoFetch = $this->modx->getService('pdoFetch');
+
+
+        return parent::initialize();
+    }
+
+    /**
+     * Получает сырой массив категорий
+     * @return array
+     */
+    public function getData()
+    {
+        $this->pdoFetch->setConfig([
+            'parents' => 2,
+            'select' => 'pagetitle',
+            'sortby' => 'id',
+            'limit' => 10,
+            'depth' => 50,
+            'return' => 'data',
+            'where' => [
+                'class_key' => 'msProduct'
+            ]
+        ]);
+        return $this->pdoFetch->run();
+    }
+
+    public function process()
+    {
+        $items = $this->getData();
+        $this->modx->log(1, print_r($items, true));
+        $this->modx->log(1, print_r($this->getProperties(), true));
+    }
 
     /**
      * We do a special check of permissions
@@ -98,6 +133,7 @@ class DoubleCheckItemGetListProcessor extends modObjectGetListProcessor
             'menu' => true,
         ];
 
+        $this->modx->log(1, print_r($array, 1));
         return $array;
     }
 

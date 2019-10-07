@@ -193,7 +193,7 @@ class DoubleCheckPackage
                 $menu = $this->modx->newObject('modMenu');
                 $menu->fromArray(array_merge([
                     'text' => $name,
-                    'parent' => 'components',
+                    'parent' => 'minishop2',
                     'namespace' => $this->config['name_lower'],
                     'icon' => '',
                     'menuindex' => 0,

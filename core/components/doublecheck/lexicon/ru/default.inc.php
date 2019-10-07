@@ -2,10 +2,10 @@
 include_once 'setting.inc.php';
 
 $_lang['doublecheck'] = 'DoubleCheck';
-$_lang['doublecheck_menu_desc'] = 'Пример расширения для разработки.';
-$_lang['doublecheck_intro_msg'] = 'Вы можете выделять сразу несколько предметов при помощи Shift или Ctrl.';
+$_lang['doublecheck_menu_desc'] = 'Поиск дублей товаров и объединение в одно.';
+//$_lang['doublecheck_intro_msg'] = 'Вы можете выделять сразу несколько предметов при помощи Shift или Ctrl.';
 
-$_lang['doublecheck_items'] = 'Предметы';
+$_lang['doublecheck_items'] = 'Товары';
 $_lang['doublecheck_item_id'] = 'Id';
 $_lang['doublecheck_item_name'] = 'Название';
 $_lang['doublecheck_item_description'] = 'Описание';
