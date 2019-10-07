@@ -182,7 +182,7 @@ Ext.extend(DoubleCheck.grid.Items, MODx.grid.Grid, {
     },
 
     getFields: function () {
-        return ['id', 'name', 'description', 'active', 'actions'];
+        return ['id', 'pagetitle', 'parent', 'count', 'actions'];
     },
 
     getColumns: function () {
@@ -192,21 +192,20 @@ Ext.extend(DoubleCheck.grid.Items, MODx.grid.Grid, {
             sortable: true,
             width: 70
         }, {
-            header: _('doublecheck_item_name'),
-            dataIndex: 'name',
+            header: _('doublecheck_item_pagetitle'),
+            dataIndex: 'pagetitle',
             sortable: true,
-            width: 200,
-        }, {
-            header: _('doublecheck_item_description'),
-            dataIndex: 'description',
-            sortable: false,
             width: 250,
         }, {
-            header: _('doublecheck_item_active'),
-            dataIndex: 'active',
-            renderer: DoubleCheck.utils.renderBoolean,
+            header: _('doublecheck_item_parent'),
+            dataIndex: 'parent',
             sortable: true,
-            width: 100,
+            width: 70,
+        },{
+            header: _('doublecheck_item_count'),
+            dataIndex: 'count',
+            sortable: true,
+            width: 70,
         }, {
             header: _('doublecheck_grid_actions'),
             dataIndex: 'actions',
