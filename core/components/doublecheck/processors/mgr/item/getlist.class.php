@@ -4,6 +4,11 @@ class DoubleCheckItemGetListProcessor extends modProcessor
 {
     /** @var pdoFetch $pdoFetch */
     public $pdoFetch;
+    public $parents;
+    public $depth;
+
+    public $start;
+    public $limit;
 
     /**
      * Инициализация
@@ -12,7 +17,11 @@ class DoubleCheckItemGetListProcessor extends modProcessor
     public function initialize()
     {
         $this->pdoFetch = $this->modx->getService('pdoFetch');
+        $this->parents = 2; /** TODO: Сделать из опций */
+        $this->depth = 50; /** TODO: Сделать из опций */
 
+        $this->start = (int)$this->getProperty('start');
+        $this->limit = (int)$this->getProperty('limit');
 
         return parent::initialize();
     }
@@ -23,18 +32,91 @@ class DoubleCheckItemGetListProcessor extends modProcessor
      */
     public function getData()
     {
-        $this->pdoFetch->setConfig([
-            'parents' => 2,
-            'select' => 'pagetitle',
-            'sortby' => 'id',
-            'limit' => 10,
-            'depth' => 50,
+        $config = [
+            'limit' => $this->limit,
+            'offset' => $this->start,
+            'parents' => $this->parents,
+            'depth' => $this->depth,
+            'class' => 'msProduct',
+            'select' => 'pagetitle,id,parent,uri',
+            'groupby' => 'msProduct.pagetitle',
+            'sortby' => 'pagetitle',
             'return' => 'data',
             'where' => [
                 'class_key' => 'msProduct'
             ]
-        ]);
-        return $this->pdoFetch->run();
+        ];
+
+        $this->pdoFetch->setConfig($config);
+        $out = $this->pdoFetch->run();
+        $actions = [
+            [
+                'cls' => '',
+                'icon' => 'icon icon-edit',
+                'title' => 'Изменить Предмет',
+                'action' => 'updateItem',
+                'button' => 1,
+                'menu' => 1,
+            ],
+            [
+                'cls' => '',
+                'icon' => 'icon icon-power-off action-gray',
+                'title' => 'Отключить предмет',
+                'action' => 'disableItem',
+                'multiple' => 'Отключить Предметы',
+                'button' => 1,
+                'menu' => 1,
+            ],
+            [
+                'cls' => '',
+                'icon' => 'icon icon-trash-o action-red',
+                'title' => 'Удалить Предмет',
+                'action' => 'removeItem',
+                'multiple' => 'Удалить Предметы',
+                'button' => 1,
+                'menu' => 1,
+            ],
+        ];
+
+
+        foreach ($out as $key => $product) {
+            $doubles = $this->getDoubles($product['pagetitle'], (int)$product['id']);
+            $out[$key]['count'] = count($doubles);
+            $out[$key]['doubles'] = $doubles;
+            $out[$key]['actions'] = $actions;
+            if ($doubles == false) {
+//                unset($out[$key]);
+                continue;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param string $name
+     * @param int $id
+     * @return array|bool
+     */
+    public function getDoubles($name, $id)
+    {
+        $config = [
+            'parents' => $this->parents,
+            'depth' => $this->depth,
+            'select' => 'pagetitle,id,parent',
+            'sortby' => 'id',
+            'limit' => 0,
+            'return' => 'data',
+            'where' => [
+                'pagetitle' => $name,
+                'id:!=' => $id, /** TODO: Сделать по опции */
+            ]
+        ];
+        $this->pdoFetch->setConfig($config);
+        $doubles = $this->pdoFetch->run();
+
+
+        return $doubles;
     }
 
     public function process()
