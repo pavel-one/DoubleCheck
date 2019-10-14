@@ -69,7 +69,7 @@ class DoubleCheckItemGetListProcessor extends modProcessor
                 'cls' => '',
                 'icon' => 'icon icon-wrench',
                 'title' => 'Объеденить',
-                'action' => 'updateItem',
+                'action' => 'combineItem',
                 'button' => 1,
                 'menu' => 1,
             ],
@@ -77,7 +77,7 @@ class DoubleCheckItemGetListProcessor extends modProcessor
                 'cls' => '',
                 'icon' => 'icon icon-eye',
                 'title' => 'Посмотреть дубли',
-                'action' => 'showDubles',
+                'action' => 'showDoubles',
                 'button' => 1,
                 'menu' => 1,
             ]

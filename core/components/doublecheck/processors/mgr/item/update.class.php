@@ -1,48 +1,162 @@
 <?php
 
-class DoubleCheckItemUpdateProcessor extends modObjectUpdateProcessor
+class DoubleCheckItemUpdateGetListProcessor extends modProcessor
 {
-    public $objectType = 'DoubleCheckItem';
-    public $classKey = 'DoubleCheckItem';
-    public $languageTopics = ['doublecheck'];
-    //public $permission = 'save';
+    /** @var pdoFetch $pdoFetch */
+    public $pdoFetch;
+    public $parents;
+    public $depth;
 
+    public $start;
+    public $limit;
 
-    /**
-     * We doing special check of permission
-     * because of our objects is not an instances of modAccessibleObject
-     *
-     * @return bool|string
-     */
-    public function beforeSave()
-    {
-        if (!$this->checkPermissions()) {
-            return $this->modx->lexicon('access_denied');
-        }
-
-        return true;
-    }
-
+    public $sort = 'pagetitle';
+    public $dir = 'ASC';
 
     /**
+     * Инициализация
      * @return bool
      */
-    public function beforeSet()
+    public function initialize()
     {
-        $id = (int)$this->getProperty('id');
-        $name = trim($this->getProperty('name'));
-        if (empty($id)) {
-            return $this->modx->lexicon('doublecheck_item_err_ns');
+        $this->pdoFetch = $this->modx->getService('pdoFetch');
+        $this->parents = $this->modx->getOption('queueparser_catalog', [], 2);
+        $this->depth = $this->modx->getOption('queueparser_depth', [], 50);
+
+        $this->start = (int)$this->getProperty('start');
+        $this->limit = (int)$this->getProperty('limit');
+
+        if ($sort = $this->getProperty('sort')) {
+            $this->sort = $sort;
         }
 
-        if (empty($name)) {
-            $this->modx->error->addField('name', $this->modx->lexicon('doublecheck_item_err_name'));
-        } elseif ($this->modx->getCount($this->classKey, ['name' => $name, 'id:!=' => $id])) {
-            $this->modx->error->addField('name', $this->modx->lexicon('doublecheck_item_err_ae'));
+        if ($dir = $this->getProperty('dir')) {
+            $this->dir = $dir;
         }
 
-        return parent::beforeSet();
+        $this->limit = (int)$this->getProperty('limit');
+
+        return parent::initialize();
     }
+
+    /**
+     * Получает сырой массив категорий
+     * @return array
+     */
+    public function getData()
+    {
+        $config = [
+            'limit' => $this->limit,
+            'offset' => $this->start,
+            'parents' => $this->parents,
+            'depth' => $this->depth,
+            'class' => 'msProduct',
+            'select' => 'pagetitle,id,parent,uri',
+            'groupby' => 'msProduct.pagetitle',
+            'sortby' => $this->sort,
+            'sortdir' => $this->dir,
+            'return' => 'data',
+            'where' => [
+                'class_key' => 'msProduct',
+                'pagetitle:!=' => '',
+            ]
+        ];
+
+        $this->pdoFetch->setConfig($config);
+        $out = $this->pdoFetch->run();
+        $actions = [
+            [
+                'cls' => '',
+                'icon' => 'icon icon-wrench',
+                'title' => 'Объеденить',
+                'action' => 'combineItem',
+                'button' => 1,
+                'menu' => 1,
+            ],
+            [
+                'cls' => '',
+                'icon' => 'icon icon-eye',
+                'title' => 'Посмотреть дубли',
+                'action' => 'showDoubles',
+                'button' => 1,
+                'menu' => 1,
+            ]
+        ];
+
+
+        foreach ($out as $key => $product) {
+            $doubles = $this->getDoubles($product['pagetitle'], (int)$product['id']);
+            $out[$key]['count'] = count($doubles);
+            $out[$key]['doubles'] = $doubles;
+            if ($out[$key]['count']) {
+                $out[$key]['actions'] = $actions;
+            }
+            if ($doubles == false) {
+                continue;
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * @param string $name
+     * @param int $id
+     * @return array|bool
+     */
+    public function getDoubles($name, $id)
+    {
+        $config = [
+            'parents' => $this->parents,
+            'depth' => $this->depth,
+            'select' => 'pagetitle,id,parent',
+            'sortby' => 'id',
+            'limit' => 0,
+            'return' => 'data',
+            'where' => [
+                'pagetitle' => $name,
+                'id:!=' => $id,/** TODO: Сделать по опции */
+            ]
+        ];
+        $this->pdoFetch->setConfig($config);
+        $doubles = $this->pdoFetch->run();
+
+
+        return $doubles;
+    }
+
+    /**
+     * Получение всех продуктов
+     * @return int
+     */
+    public function getTotal()
+    {
+        $query = $this->modx->newQuery('msProduct');
+        $query->where([
+            'class_key' => 'msProduct',
+            'pagetitle:!=' => '',
+        ]);
+        $query->groupby('pagetitle');
+        return $this->modx->getCount('msProduct', $query);
+    }
+
+    public function process()
+    {
+        $items = $this->getData();
+        $total = $this->getTotal();
+
+        return $this->success($items, $total);
+    }
+
+    public function success($results = '', $total = null)
+    {
+        $outArr = [
+            'results' => $results,
+            'success' => true,
+            'total' => $total,
+        ];
+        return json_encode($outArr);
+    }
+
 }
 
-return 'DoubleCheckItemUpdateProcessor';
+return 'DoubleCheckItemUpdateGetListProcessor';

@@ -13,10 +13,6 @@ DoubleCheck.grid.Items = function (config) {
             action: 'mgr/item/getlist'
         },
         listeners: {
-            rowDblClick: function (grid, rowIndex, e) {
-                var row = grid.store.getAt(rowIndex);
-                this.updateItem(grid, e, row);
-            }
         },
         viewConfig: {
             forceFit: true,
@@ -72,113 +68,31 @@ Ext.extend(DoubleCheck.grid.Items, MODx.grid.Grid, {
         w.show(e.target);
     },
 
-    updateItem: function (btn, e, row) {
+    showDoubles: function (btn, e, row) {
         if (typeof(row) != 'undefined') {
             this.menu.record = row.data;
         }
         else if (!this.menu.record) {
             return false;
         }
-        var id = this.menu.record.id;
+        let id = this.menu.record.id;
 
-        MODx.Ajax.request({
-            url: this.config.url,
-            params: {
-                action: 'mgr/item/get',
+        let w = MODx.load({
+            xtype: 'doublecheck-item-window-update',
+            id: Ext.id(),
+            record: {
                 id: id
             },
             listeners: {
                 success: {
-                    fn: function (r) {
-                        var w = MODx.load({
-                            xtype: 'doublecheck-item-window-update',
-                            id: Ext.id(),
-                            record: r,
-                            listeners: {
-                                success: {
-                                    fn: function () {
-                                        this.refresh();
-                                    }, scope: this
-                                }
-                            }
-                        });
-                        w.reset();
-                        w.setValues(r.object);
-                        w.show(e.target);
-                    }, scope: this
-                }
-            }
-        });
-    },
-
-    removeItem: function () {
-        var ids = this._getSelectedIds();
-        if (!ids.length) {
-            return false;
-        }
-        MODx.msg.confirm({
-            title: ids.length > 1
-                ? _('doublecheck_items_remove')
-                : _('doublecheck_item_remove'),
-            text: ids.length > 1
-                ? _('doublecheck_items_remove_confirm')
-                : _('doublecheck_item_remove_confirm'),
-            url: this.config.url,
-            params: {
-                action: 'mgr/item/remove',
-                ids: Ext.util.JSON.encode(ids),
-            },
-            listeners: {
-                success: {
                     fn: function () {
                         this.refresh();
                     }, scope: this
                 }
             }
         });
-        return true;
-    },
-
-    disableItem: function () {
-        var ids = this._getSelectedIds();
-        if (!ids.length) {
-            return false;
-        }
-        MODx.Ajax.request({
-            url: this.config.url,
-            params: {
-                action: 'mgr/item/disable',
-                ids: Ext.util.JSON.encode(ids),
-            },
-            listeners: {
-                success: {
-                    fn: function () {
-                        this.refresh();
-                    }, scope: this
-                }
-            }
-        })
-    },
-
-    enableItem: function () {
-        var ids = this._getSelectedIds();
-        if (!ids.length) {
-            return false;
-        }
-        MODx.Ajax.request({
-            url: this.config.url,
-            params: {
-                action: 'mgr/item/enable',
-                ids: Ext.util.JSON.encode(ids),
-            },
-            listeners: {
-                success: {
-                    fn: function () {
-                        this.refresh();
-                    }, scope: this
-                }
-            }
-        })
+        w.reset();
+        w.show(e.target);
     },
 
     getFields: function () {
@@ -204,7 +118,7 @@ Ext.extend(DoubleCheck.grid.Items, MODx.grid.Grid, {
         },{
             header: _('doublecheck_item_count'),
             dataIndex: 'count',
-            sortable: true,
+            sortable: false,
             width: 70,
         }, {
             header: _('doublecheck_grid_actions'),
@@ -218,25 +132,9 @@ Ext.extend(DoubleCheck.grid.Items, MODx.grid.Grid, {
 
     getTopBar: function () {
         return [{
-            text: '<i class="icon icon-plus"></i>&nbsp;' + _('doublecheck_item_create'),
+            text: '<i class="icon icon-magic"></i>&nbsp; Автоматически',
             handler: this.createItem,
             scope: this
-        }, '->', {
-            xtype: 'doublecheck-field-search',
-            width: 250,
-            listeners: {
-                search: {
-                    fn: function (field) {
-                        this._doSearch(field);
-                    }, scope: this
-                },
-                clear: {
-                    fn: function (field) {
-                        field.setValue('');
-                        this._clearSearch();
-                    }, scope: this
-                },
-            }
         }];
     },
 
@@ -272,15 +170,75 @@ Ext.extend(DoubleCheck.grid.Items, MODx.grid.Grid, {
 
         return ids;
     },
-
-    _doSearch: function (tf) {
-        this.getStore().baseParams.query = tf.getValue();
-        this.getBottomToolbar().changePage(1);
-    },
-
-    _clearSearch: function () {
-        this.getStore().baseParams.query = '';
-        this.getBottomToolbar().changePage(1);
-    },
 });
 Ext.reg('doublecheck-grid-items', DoubleCheck.grid.Items);
+
+
+DoubleCheck.grid.ItemsUpdateGrid = function (config) {
+    config = config || {};
+    let id = config.record.id;
+
+    if (!config.id) {
+        config.id = 'doublecheck-grid-itemsupdategrid';
+    }
+    Ext.applyIf(config, {
+        url: DoubleCheck.config.connector_url,
+        fields: this.getFields(config),
+        columns: this.getColumns(config),
+        sm: new Ext.grid.CheckboxSelectionModel(),
+        baseParams: {
+            action: 'mgr/item/update',
+            id: id,
+        },
+        listeners: {
+        },
+
+        paging: true,
+        remoteSort: true,
+        autoHeight: true,
+    });
+    DoubleCheck.grid.ItemsUpdateGrid.superclass.constructor.call(this, config);
+};
+Ext.extend(DoubleCheck.grid.ItemsUpdateGrid, MODx.grid.Grid, {
+    windows: {},
+
+    getMenu: function (grid, rowIndex) {
+        var ids = this._getSelectedIds();
+
+        var row = grid.getStore().getAt(rowIndex);
+        var menu = DoubleCheck.utils.getMenu(row.data['actions'], this, ids);
+
+        this.addContextMenuItem(menu);
+    },
+
+
+    getFields: function () {
+        return ['id', 'pagetitle', 'parent', 'cats'];
+    },
+
+    getColumns: function () {
+        return [{
+            header: 'ID',
+            dataIndex: 'id',
+            sortable: true,
+            width: 70
+        }, {
+            header: 'Название',
+            dataIndex: 'pagetitle',
+            sortable: true,
+            width: 200,
+        }, {
+            header: 'ID Категории',
+            dataIndex: 'parent',
+            sortable: true,
+            width: 70,
+        },{
+            header: 'Дерево',
+            dataIndex: 'cats',
+            sortable: false,
+            width: 200,
+        }];
+    },
+
+});
+Ext.reg('doublecheck-grid-itemsupdategrid', DoubleCheck.grid.ItemsUpdateGrid);
