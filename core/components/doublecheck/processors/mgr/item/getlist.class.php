@@ -88,7 +88,9 @@ class DoubleCheckItemGetListProcessor extends modProcessor
             $doubles = $this->getDoubles($product['pagetitle'], (int)$product['id']);
             $out[$key]['count'] = count($doubles);
             $out[$key]['doubles'] = $doubles;
-            $out[$key]['actions'] = $actions;
+            if ($out[$key]['count']) {
+                $out[$key]['actions'] = $actions;
+            }
             if ($doubles == false) {
                 continue;
             }
