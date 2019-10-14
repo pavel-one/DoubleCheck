@@ -59,6 +59,7 @@ class DoubleCheckItemGetListProcessor extends modProcessor
             'where' => [
                 'class_key' => 'msProduct',
                 'pagetitle:!=' => '',
+                'deleted:!=' => true,
             ]
         ];
 
@@ -114,6 +115,7 @@ class DoubleCheckItemGetListProcessor extends modProcessor
             'return' => 'data',
             'where' => [
                 'pagetitle' => $name,
+                'deleted:!=' => true,
                 'id:!=' => $id,/** TODO: Сделать по опции */
             ]
         ];
@@ -134,6 +136,7 @@ class DoubleCheckItemGetListProcessor extends modProcessor
         $query->where([
             'class_key' => 'msProduct',
             'pagetitle:!=' => '',
+            'deleted:!=' => true,
         ]);
         $query->groupby('pagetitle');
         return $this->modx->getCount('msProduct', $query);

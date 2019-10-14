@@ -95,6 +95,28 @@ Ext.extend(DoubleCheck.grid.Items, MODx.grid.Grid, {
         w.show(e.target);
     },
 
+    combineItem: function(btn, e) {
+        const id = this.menu.record.id,
+            pagetitle = this.menu.record.pagetitle;
+        MODx.msg.confirm({
+            title: 'Объединение',
+            text: `Вы уверены что хотите выполнить объединение товаров? Главным товаром будет взят товар с id <b>${id}</b>`,
+            url: this.config.url,
+            params: {
+                action: 'mgr/item/combine',
+                id: id,
+                pagetitle: pagetitle,
+            },
+            listeners: {
+                success: {
+                    fn: function () {
+                        this.refresh();
+                    }, scope: this
+                }
+            }
+        });
+    },
+
     getFields: function () {
         return ['id', 'pagetitle', 'parent', 'count', 'actions'];
     },
