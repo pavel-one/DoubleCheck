@@ -11,6 +11,10 @@ $_lang['doublecheck_item_name'] = 'Название';
 $_lang['doublecheck_item_description'] = 'Описание';
 $_lang['doublecheck_item_active'] = 'Активно';
 
+$_lang['doublecheck_item_pagetitle'] = 'Название';
+$_lang['doublecheck_item_parent'] = 'Родитель';
+$_lang['doublecheck_item_count'] = 'Кол-во дублей';
+
 $_lang['doublecheck_item_create'] = 'Создать предмет';
 $_lang['doublecheck_item_update'] = 'Изменить Предмет';
 $_lang['doublecheck_item_enable'] = 'Включить Предмет';

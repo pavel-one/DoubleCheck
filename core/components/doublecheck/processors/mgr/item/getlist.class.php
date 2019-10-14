@@ -10,6 +10,9 @@ class DoubleCheckItemGetListProcessor extends modProcessor
     public $start;
     public $limit;
 
+    public $sort = 'pagetitle';
+    public $dir = 'ASC';
+
     /**
      * Инициализация
      * @return bool
@@ -17,12 +20,20 @@ class DoubleCheckItemGetListProcessor extends modProcessor
     public function initialize()
     {
         $this->pdoFetch = $this->modx->getService('pdoFetch');
-        $this->parents = 2;
-        /** TODO: Сделать из опций */
-        $this->depth = 50;
-        /** TODO: Сделать из опций */
+        $this->parents = $this->modx->getOption('queueparser_catalog', [], 2);
+        $this->depth = $this->modx->getOption('queueparser_depth', [], 50);
 
         $this->start = (int)$this->getProperty('start');
+        $this->limit = (int)$this->getProperty('limit');
+
+        if ($sort = $this->getProperty('sort')) {
+            $this->sort = $sort;
+        }
+
+        if ($dir = $this->getProperty('dir')) {
+            $this->dir = $dir;
+        }
+
         $this->limit = (int)$this->getProperty('limit');
 
         return parent::initialize();
@@ -42,10 +53,12 @@ class DoubleCheckItemGetListProcessor extends modProcessor
             'class' => 'msProduct',
             'select' => 'pagetitle,id,parent,uri',
             'groupby' => 'msProduct.pagetitle',
-            'sortby' => 'pagetitle',
+            'sortby' => $this->sort,
+            'sortdir' => $this->dir,
             'return' => 'data',
             'where' => [
-                'class_key' => 'msProduct'
+                'class_key' => 'msProduct',
+                'pagetitle:!=' => '',
             ]
         ];
 
@@ -54,30 +67,20 @@ class DoubleCheckItemGetListProcessor extends modProcessor
         $actions = [
             [
                 'cls' => '',
-                'icon' => 'icon icon-edit',
-                'title' => 'Изменить Предмет',
+                'icon' => 'icon icon-wrench',
+                'title' => 'Объеденить',
                 'action' => 'updateItem',
                 'button' => 1,
                 'menu' => 1,
             ],
             [
                 'cls' => '',
-                'icon' => 'icon icon-power-off action-gray',
-                'title' => 'Отключить предмет',
-                'action' => 'disableItem',
-                'multiple' => 'Отключить Предметы',
+                'icon' => 'icon icon-eye',
+                'title' => 'Посмотреть дубли',
+                'action' => 'showDubles',
                 'button' => 1,
                 'menu' => 1,
-            ],
-            [
-                'cls' => '',
-                'icon' => 'icon icon-trash-o action-red',
-                'title' => 'Удалить Предмет',
-                'action' => 'removeItem',
-                'multiple' => 'Удалить Предметы',
-                'button' => 1,
-                'menu' => 1,
-            ],
+            ]
         ];
 
 
@@ -87,11 +90,9 @@ class DoubleCheckItemGetListProcessor extends modProcessor
             $out[$key]['doubles'] = $doubles;
             $out[$key]['actions'] = $actions;
             if ($doubles == false) {
-//                unset($out[$key]);
                 continue;
             }
         }
-
         return $out;
     }
 
@@ -127,9 +128,13 @@ class DoubleCheckItemGetListProcessor extends modProcessor
      */
     public function getTotal()
     {
-        return $this->modx->getCount('msProduct', [
-            'class_key' => 'msProduct'
+        $query = $this->modx->newQuery('msProduct');
+        $query->where([
+            'class_key' => 'msProduct',
+            'pagetitle:!=' => '',
         ]);
+        $query->groupby('pagetitle');
+        return $this->modx->getCount('msProduct', $query);
     }
 
     public function process()
@@ -137,12 +142,10 @@ class DoubleCheckItemGetListProcessor extends modProcessor
         $items = $this->getData();
         $total = $this->getTotal();
 
-        $this->modx->log(1, print_r($items, true));
-        $this->modx->log(1, print_r($this->getProperties(), true));
         return $this->success($items, $total);
     }
 
-    public function success($results, $total)
+    public function success($results = '', $total = null)
     {
         $outArr = [
             'results' => $results,
