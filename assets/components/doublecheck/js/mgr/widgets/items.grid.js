@@ -117,6 +117,10 @@ Ext.extend(DoubleCheck.grid.Items, MODx.grid.Grid, {
         });
     },
 
+    MultiCombine: function() {
+        console.log(this.getStore());
+    },
+
     getFields: function () {
         return ['id', 'pagetitle', 'parent', 'count', 'actions'];
     },
@@ -155,7 +159,7 @@ Ext.extend(DoubleCheck.grid.Items, MODx.grid.Grid, {
     getTopBar: function () {
         return [{
             text: '<i class="icon icon-magic"></i>&nbsp; Автоматически',
-            handler: this.createItem,
+            handler: this.MultiCombine,
             scope: this
         }];
     },

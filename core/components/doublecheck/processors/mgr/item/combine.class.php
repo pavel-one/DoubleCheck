@@ -39,10 +39,15 @@ class DoubleCheckCombineProcessor extends modProcessor {
             'return' => 'data',
             'where' => [
                 'pagetitle' => $this->pagetitle,
+                'deleted:!=' => true,
                 'id:!=' => $this->id,
             ]
         ]);
         $products = $this->fetch->run();
+
+        if (!count($products)) {
+            return $this->failure('Не найдены дубли');
+        }
 
         foreach ($products as $product) {
             /** @var msCategoryMember $obj */
