@@ -12,8 +12,7 @@ DoubleCheck.grid.Items = function (config) {
         baseParams: {
             action: 'mgr/item/getlist'
         },
-        listeners: {
-        },
+        listeners: {},
         viewConfig: {
             forceFit: true,
             enableRowBody: true,
@@ -69,10 +68,9 @@ Ext.extend(DoubleCheck.grid.Items, MODx.grid.Grid, {
     },
 
     showDoubles: function (btn, e, row) {
-        if (typeof(row) != 'undefined') {
+        if (typeof (row) != 'undefined') {
             this.menu.record = row.data;
-        }
-        else if (!this.menu.record) {
+        } else if (!this.menu.record) {
             return false;
         }
         let id = this.menu.record.id;
@@ -95,7 +93,7 @@ Ext.extend(DoubleCheck.grid.Items, MODx.grid.Grid, {
         w.show(e.target);
     },
 
-    combineItem: function(btn, e) {
+    combineItem: function (btn, e) {
         const id = this.menu.record.id,
             pagetitle = this.menu.record.pagetitle;
         MODx.msg.confirm({
@@ -117,8 +115,42 @@ Ext.extend(DoubleCheck.grid.Items, MODx.grid.Grid, {
         });
     },
 
-    MultiCombine: function() {
-        console.log(this.getStore());
+    MultiCombine: function () {
+        const store = this.getStore(),
+            items = store.data.items,
+            keys = store.data.keys;
+        let ids = [];
+
+        for (key in items) {
+            if ('data' in items[key]) {
+                if (items[key].data.count) {
+                    ids.push(items[key].data.id);
+                }
+            }
+        }
+        if (!ids.length) {
+
+
+            MODx.msg.alert('Внимание','На текущей странице больше нет товаров для объединения, перейдите на следующую',MODx);
+            console.log('alert');
+            return ;
+        }
+        MODx.msg.confirm({
+            title: 'Объединение',
+            text: `Вы уверены что хотите выполнить массовое объединение товаров? Главными товарами будут взяты товары с id <b>${ids.join(',')}</b>`,
+            url: this.config.url,
+            params: {
+                action: 'mgr/item/multicombine',
+                ids: Ext.encode(ids),
+            },
+            listeners: {
+                success: {
+                    fn: function () {
+                        this.refresh();
+                    }, scope: this
+                }
+            }
+        });
     },
 
     getFields: function () {
@@ -141,7 +173,7 @@ Ext.extend(DoubleCheck.grid.Items, MODx.grid.Grid, {
             dataIndex: 'parent',
             sortable: true,
             width: 70,
-        },{
+        }, {
             header: _('doublecheck_item_count'),
             dataIndex: 'count',
             sortable: false,
@@ -168,13 +200,12 @@ Ext.extend(DoubleCheck.grid.Items, MODx.grid.Grid, {
         var elem = e.getTarget();
         if (elem.nodeName == 'BUTTON') {
             var row = this.getSelectionModel().getSelected();
-            if (typeof(row) != 'undefined') {
+            if (typeof (row) != 'undefined') {
                 var action = elem.getAttribute('action');
                 if (action == 'showMenu') {
                     var ri = this.getStore().find('id', row.id);
                     return this._showMenu(this, ri, e);
-                }
-                else if (typeof this[action] === 'function') {
+                } else if (typeof this[action] === 'function') {
                     this.menu.record = row.data;
                     return this[action](this, e);
                 }
@@ -216,8 +247,7 @@ DoubleCheck.grid.ItemsUpdateGrid = function (config) {
             action: 'mgr/item/update',
             id: id,
         },
-        listeners: {
-        },
+        listeners: {},
 
         paging: true,
         remoteSort: true,
@@ -258,7 +288,7 @@ Ext.extend(DoubleCheck.grid.ItemsUpdateGrid, MODx.grid.Grid, {
             dataIndex: 'parent',
             sortable: true,
             width: 70,
-        },{
+        }, {
             header: 'Дерево',
             dataIndex: 'cats',
             sortable: false,

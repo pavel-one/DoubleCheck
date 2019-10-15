@@ -74,14 +74,14 @@ class DoubleCheckItemGetListProcessor extends modProcessor
                 'button' => 1,
                 'menu' => 1,
             ],
-            [
-                'cls' => '',
-                'icon' => 'icon icon-eye',
-                'title' => 'Посмотреть дубли',
-                'action' => 'showDoubles',
-                'button' => 1,
-                'menu' => 1,
-            ]
+//            [
+//                'cls' => '',
+//                'icon' => 'icon icon-eye',
+//                'title' => 'Посмотреть дубли',
+//                'action' => 'showDoubles',
+//                'button' => 1,
+//                'menu' => 1,
+//            ]
         ];
 
 
