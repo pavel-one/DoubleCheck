@@ -1,5 +1,5 @@
 ## Описание
-![Preview](https://github.com/pavel_one/DoubleCheck/raw/master/preview.png)
+![Preview](https://raw.githubusercontent.com/pavel-one/DoubleCheck/master/preview.png)
 
 Компонент призван решить проблему дублей товаров, которая возникает после парсинга и/или импорта товаров со сторонних источников. 
 
