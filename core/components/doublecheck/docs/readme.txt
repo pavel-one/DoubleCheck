@@ -1,7 +1,7 @@
 --------------------
 DoubleCheck
 --------------------
-Author: John Doe <john@doe.com>
+Author: Pavel Zarubin <pavel@orendat.ru>
 --------------------
 
-A basic Extra for MODx Revolution.
+Find and fix products doubles.

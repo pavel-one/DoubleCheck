@@ -1,34 +1,15 @@
-## Quick start
+## Описание
+![Preview](https://github.com/pavel_one/DoubleCheck/raw/master/preview.png)
 
-* Install MODX Revolution
+Компонент призван решить проблему дублей товаров, которая возникает после парсинга и/или импорта товаров со сторонних источников. 
 
-* Upload this package into the `Extras` directory in the root of site
+## Принцип работы
 
-* You need to rename it to `anyOtherName` your package, so enter into SSH console and run
-```
-php ~/www/Extras/DoubleCheck/rename_it.php anyOtherName
-```
-*path on your site may differs*
+Компонент ищет дубли по полю **pagetitle**, исправляет  дубли путем добавления товару первого вхождения связанные категории дублей, после добавления удаляет товары из последующих вхождений
 
-* Then install it on dev site
-```
-php ~/www/Extras/anyOtherName/_build/build.php
-``` 
+## Использование
 
-## Settings
+1. Пакеты -> miniShop2 -> DoubleCheck
+2. Проверяем дубли, а после запускаем автоматическое или ручное исправление
 
-See `_build/config.inc.php` for editable package options.
-
-All resolvers and elements are in `_build` path. All files that begins not from `.` or `_` will be added automatically. 
-
-If you will add a new type of element, you will need to add the method with that name into `build.php` script as well.
-
-## Build and download
-
-You can build package at any time by opening `http://dev.site.com/Extras/anyOtherName/_build/build.php`
-
-If you want to download built package - just add `?download=1` to the address.
-
-## Example deploy settings
-
-[![](https://file.modx.pro/files/3/a/b/3ab2753b9e8b6c09a4ca0da819db37b6s.jpg)](https://file.modx.pro/files/3/a/b/3ab2753b9e8b6c09a4ca0da819db37b6.png) [![](https://file.modx.pro/files/c/1/a/c1afbb8988ab358a0b400cdcdb0391d4s.jpg)](https://file.modx.pro/files/c/1/a/c1afbb8988ab358a0b400cdcdb0391d4.png)
+Собственно все :)

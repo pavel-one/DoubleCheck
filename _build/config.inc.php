@@ -12,7 +12,7 @@ return [
     'name' => 'DoubleCheck',
     'name_lower' => 'doublecheck',
     'version' => '1.0.0',
-    'release' => 'pl',
+    'release' => 'beta',
     // Install package to site right after build
     'install' => true,
     // Which elements should be updated on package upgrade

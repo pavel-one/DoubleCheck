@@ -1,5 +1,5 @@
 Changelog for DoubleCheck.
 
-1.0.0-pl
+1.0.0-beta
 ==============
 - Инициализация modExtra
